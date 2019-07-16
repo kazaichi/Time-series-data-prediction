@@ -4,4 +4,4 @@
 LSTMによるカオス時系列データの予測
 
 ## 実行方法
-`python chaos_lstm
+`python chaos_lstm`
