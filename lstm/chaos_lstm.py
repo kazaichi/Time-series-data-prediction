@@ -6,12 +6,12 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import pandas as pd
 from keras import backend as K
-from keras.layers import Input,Dense
-from keras.models import Model
+from keras.models import Sequential
+from keras.layers.core import Dense, Activation
+from keras.layers.recurrent import LSTM
 from keras.callbacks import EarlyStopping
 from keras.callbacks import CSVLogger
 import tensorflow as tf
-from qrnn import QRNN
 from make_chaos import create_duffing
 
 import random as rn
@@ -43,7 +43,6 @@ Y = np.array(target).reshape(len(data), 1)
 
 X_ = X[:len(t_lin) - 500 - 150]#学習用
 Y_ = Y[:len(t_lin) - 500 - 150]#学習用
-
 N_train = int(len(data) * 0.7)
 N_validation = len(data) - N_train
 X_train, X_validation, Y_train, Y_validation = \
@@ -52,20 +51,21 @@ X_train, X_validation, Y_train, Y_validation = \
 #予測対象の表示
 plt.plot(x_lin[len(x_lin)-500:len(x_lin)])
 plt.show()
+print("a")
 
 #学習モデルの作成
-ws = 128 #window_size
-input_layer = Input(shape=(maxlen, 1))
-qrnn_output_layer = QRNN(64, window_size=ws, dropout=0)(input_layer)
-prediction_result = Dense(1)(qrnn_output_layer)
-model = Model(inputs=input_layer, outputs=prediction_result)
-model.compile(loss="mean_squared_error", optimizer="adam")
-
-
+in_out_neurons = 1
+hidden_neurons = 300
 
 pat = 1
 early_stopping = EarlyStopping(monitor='val_loss', patience=pat, verbose=1)
-csv = CSVLogger('./TrainingWS_' + str(ws) + 'patience_' + str(pat) + '.csv')
+csv = CSVLogger('./Training_patience_' + str(pat) + '.csv')
+
+model = Sequential()  
+model.add(LSTM(hidden_neurons, batch_input_shape=(None, maxlen, in_out_neurons), return_sequences=False))  
+model.add(Dense(in_out_neurons))  
+model.add(Activation("linear"))  
+model.compile(loss="mean_squared_error", optimizer="rmsprop")
 fit = model.fit(X_train, Y_train, batch_size=512, epochs=10000, 
           validation_data=(X_validation, Y_validation), callbacks=[early_stopping, csv])
 
@@ -102,9 +102,3 @@ def plot_history_loss(fit):
 
 plt.figure()
 plot_history_loss(fit)
-
-#重みの保存###################
-#json_string = model.to_json()
-#open('modelWS_' + str(ws) + 'patience_' + str(pat) + '.json', 'w').write(json_string)
-#model.save_weights('weightsWS_' + str(ws) + 'patience_' + str(pat) + '.h5')
-##############################
