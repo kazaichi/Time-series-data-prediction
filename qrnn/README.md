@@ -4,4 +4,4 @@
 QRNNによるカオス時系列データの予測
 
 ## 実行方法
-`python chaos_qrnn`
+`python qrnn.py`
