@@ -1,4 +1,5 @@
-# rnn
+# Time series data prediction
+時系列データ予測を様々な方法で試す。
 
 ## version
 - python 3.7.3
